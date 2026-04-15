@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" fill="none">
+  <defs>
+    <style>
+      .t { font-family: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace; font-size: 13px; }
+      .dim { fill: rgba(255,255,255,0.4); }
+      .wh { fill: #e4e4e7; }
+      .gr { fill: #22c55e; }
+      .rd { fill: #ef4444; }
+      .yl { fill: #eab308; }
+      .bl { fill: #60a5fa; }
+      .cy { fill: #22d3ee; }
+      .rd-b { fill: #ef4444; font-weight: bold; }
+      .wh-b { fill: #e4e4e7; font-weight: bold; }
+    </style>
+  </defs>
+
+  <!-- Window -->
+  <rect width="720" height="720" rx="10" fill="#0d1117"/>
+  <rect x="1" y="1" width="718" height="718" rx="9" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+
+  <!-- Title bar -->
+  <rect x="0" y="0" width="720" height="40" rx="10" fill="#161b22"/>
+  <rect x="0" y="30" width="720" height="10" fill="#161b22"/>
+  <circle cx="20" cy="20" r="6" fill="#ef4444" opacity="0.8"/>
+  <circle cx="40" cy="20" r="6" fill="#eab308" opacity="0.8"/>
+  <circle cx="60" cy="20" r="6" fill="#22c55e" opacity="0.8"/>
+  <text x="360" y="25" class="t dim" text-anchor="middle" font-size="12">unpwned scan demo.unpwned.io</text>
+  <line x1="0" y1="40" x2="720" y2="40" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+  <!-- Content -->
+  <!-- Banner -->
+  <text x="30" y="80" class="t cy">  ╔════════════════════════════════════════════╗</text>
+  <text x="30" y="98" class="t cy">  ║</text>
+  <text x="68" y="98" class="t wh-b">   UNPWNED Security Scanner v1.0</text>
+  <text x="410" y="98" class="t cy">            ║</text>
+  <text x="30" y="116" class="t cy">  ╚════════════════════════════════════════════╝</text>
+
+  <!-- Target -->
+  <text x="30" y="150" class="t dim">  Target:</text>
+  <text x="100" y="150" class="t wh"> https://demo.unpwned.io</text>
+  <text x="30" y="168" class="t dim">  Scanned in</text>
+  <text x="120" y="168" class="t wh"> 0.4s</text>
+
+  <!-- Scanners -->
+  <text x="30" y="202" class="t wh">  Headers</text>
+  <text x="168" y="202" class="t rd">░░░░░░░░░░</text>
+  <text x="260" y="202" class="t rd">    0/100</text>
+  <text x="340" y="202" class="t wh">  [6 issues]</text>
+
+  <text x="30" y="222" class="t wh">  SSL/TLS</text>
+  <text x="168" y="222" class="t gr">██████████</text>
+  <text x="260" y="222" class="t gr">  100/100</text>
+  <text x="340" y="222" class="t gr">  [PASS]</text>
+
+  <text x="30" y="242" class="t wh">  DNS Security</text>
+  <text x="168" y="242" class="t rd">██░░░░░░░░</text>
+  <text x="260" y="242" class="t rd">   20/100</text>
+  <text x="340" y="242" class="t wh">  [3 issues]</text>
+
+  <text x="30" y="262" class="t wh">  Cookies</text>
+  <text x="168" y="262" class="t gr">██████████</text>
+  <text x="260" y="262" class="t gr">  100/100</text>
+  <text x="340" y="262" class="t gr">  [PASS]</text>
+
+  <text x="30" y="282" class="t wh">  CORS</text>
+  <text x="168" y="282" class="t gr">██████████</text>
+  <text x="260" y="282" class="t gr">  100/100</text>
+  <text x="340" y="282" class="t gr">  [PASS]</text>
+
+  <text x="30" y="302" class="t wh">  Sensitive Files</text>
+  <text x="168" y="302" class="t gr">██████████</text>
+  <text x="260" y="302" class="t gr">  100/100</text>
+  <text x="340" y="302" class="t gr">  [PASS]</text>
+
+  <text x="30" y="322" class="t wh">  Tech Stack</text>
+  <text x="168" y="322" class="t dim">Vercel, Next.js</text>
+
+  <!-- Divider + Score -->
+  <text x="30" y="356" class="t dim">  ────────────────────────────────────────────</text>
+  <text x="30" y="376" class="t wh-b">  Overall Score:</text>
+  <text x="180" y="376" class="t yl"> 59/100</text>
+  <text x="250" y="376" class="t wh-b">  Grade:</text>
+  <text x="320" y="376" class="t yl"> C</text>
+  <text x="30" y="396" class="t dim">  ────────────────────────────────────────────</text>
+
+  <!-- Issues -->
+  <text x="30" y="430" class="t wh-b">  ISSUES FOUND:</text>
+
+  <text x="30" y="462" class="t rd">  HIGH</text>
+  <text x="120" y="462" class="t wh">      Missing Content-Security-Policy header</text>
+
+  <text x="30" y="482" class="t rd">  HIGH</text>
+  <text x="120" y="482" class="t wh">      Missing Strict-Transport-Security header</text>
+
+  <text x="30" y="502" class="t rd">  HIGH</text>
+  <text x="120" y="502" class="t wh">      Missing SPF record</text>
+
+  <text x="30" y="522" class="t rd">  HIGH</text>
+  <text x="120" y="522" class="t wh">      Missing DMARC record</text>
+
+  <text x="30" y="542" class="t yl">  MEDIUM</text>
+  <text x="120" y="542" class="t wh">    Missing X-Frame-Options header</text>
+
+  <text x="30" y="562" class="t yl">  MEDIUM</text>
+  <text x="120" y="562" class="t wh">    Missing X-Content-Type-Options header</text>
+
+  <text x="30" y="582" class="t yl">  MEDIUM</text>
+  <text x="120" y="582" class="t wh">    No DKIM record found</text>
+
+  <text x="30" y="602" class="t bl">  LOW</text>
+  <text x="120" y="602" class="t wh">       Missing Referrer-Policy header</text>
+
+  <text x="30" y="622" class="t bl">  LOW</text>
+  <text x="120" y="622" class="t wh">       Missing Permissions-Policy header</text>
+
+  <!-- Footer -->
+  <text x="30" y="656" class="t dim">  ────────────────────────────────────────────</text>
+  <text x="30" y="676" class="t dim">  Full scan with AI fix suggestions:</text>
+  <text x="30" y="696" class="t cy">  https://unpwned.io?ref=cli</text>
+</svg>

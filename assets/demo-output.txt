@@ -1,0 +1,37 @@
+- Scanning https://demo.unpwned.io...
+
+  ╔════════════════════════════════════════════╗
+  ║   UNPWNED Security Scanner v1.0            ║
+  ╚════════════════════════════════════════════╝
+
+  Target: https://demo.unpwned.io
+  Scanned in 0.4s
+
+  Headers         ░░░░░░░░░░    0/100  [6 issues]
+  SSL/TLS         ██████████  100/100  [PASS]
+  DNS Security    ██░░░░░░░░   20/100  [3 issues]
+  Cookies         ██████████  100/100  [PASS]
+  CORS            ██████████  100/100  [PASS]
+  Sensitive Files ██████████  100/100  [PASS]
+  Tech Stack      Vercel
+
+  ────────────────────────────────────────────
+  Overall Score: 59/100  Grade: C
+  ────────────────────────────────────────────
+
+  ISSUES FOUND:
+
+  HIGH      Missing Content-Security-Policy header
+  HIGH      Missing Strict-Transport-Security header
+  HIGH      Missing SPF record
+  HIGH      Missing DMARC record
+  MEDIUM    Missing X-Frame-Options header
+  MEDIUM    Missing X-Content-Type-Options header
+  MEDIUM    No DKIM record found
+  LOW       Missing Referrer-Policy header
+  LOW       Missing Permissions-Policy header
+
+  ────────────────────────────────────────────
+  Full scan with AI fix suggestions:
+  https://unpwned.io?ref=cli
+

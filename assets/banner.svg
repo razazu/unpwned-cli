@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200" fill="none">
+  <rect width="800" height="200" rx="12" fill="#080b10"/>
+  <rect x="1" y="1" width="798" height="198" rx="11" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+
+  <!-- Terminal dots -->
+  <circle cx="30" cy="24" r="6" fill="#ef4444" opacity="0.7"/>
+  <circle cx="50" cy="24" r="6" fill="#eab308" opacity="0.7"/>
+  <circle cx="70" cy="24" r="6" fill="#22c55e" opacity="0.7"/>
+
+  <!-- Terminal bar -->
+  <rect x="0" y="40" width="800" height="1" fill="rgba(255,255,255,0.1)"/>
+
+  <!-- Shield icon -->
+  <g transform="translate(260, 65)">
+    <path d="M20 4L4 10V19C4 28.5 11 37.4 20 40C29 37.4 36 28.5 36 19V10L20 4Z" fill="none" stroke="#22c55e" stroke-width="2.5"/>
+    <path d="M15 20L19 24L27 16" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- UNPWNED text -->
+  <text x="310" y="98" font-family="monospace, 'Courier New'" font-size="36" font-weight="bold" fill="white" letter-spacing="4">UNPWNED</text>
+
+  <!-- CLI badge -->
+  <rect x="540" y="74" width="52" height="28" rx="4" fill="rgba(34,197,94,0.15)" stroke="#22c55e" stroke-width="1.5"/>
+  <text x="566" y="93" font-family="monospace, 'Courier New'" font-size="14" font-weight="bold" fill="#22c55e" text-anchor="middle">CLI</text>
+
+  <!-- Subtitle -->
+  <text x="400" y="135" font-family="monospace, 'Courier New'" font-size="14" fill="rgba(255,255,255,0.5)" text-anchor="middle" letter-spacing="3">WEBSITE SECURITY SCANNER</text>
+
+  <!-- Command line -->
+  <text x="400" y="170" font-family="monospace, 'Courier New'" font-size="13" fill="rgba(255,255,255,0.35)" text-anchor="middle">$ npx unpwned scan yoursite.com</text>
+</svg>

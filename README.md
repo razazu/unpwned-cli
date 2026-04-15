@@ -24,7 +24,7 @@ npx unpwned scan yoursite.com
 ```
 
 <p align="center">
-  <img src="assets/demo.svg" alt="UNPWNED CLI demo" width="650">
+  <img src="assets/demo.png" alt="UNPWNED CLI demo" width="650">
 </p>
 
 ---

@@ -1,6 +1,6 @@
 {
   "name": "unpwned",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Website security scanner in your terminal. Zero config. One command.",
   "type": "module",
   "bin": {

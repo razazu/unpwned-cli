@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 const CONFIG_DIR = join(homedir(), '.unpwned')
 const CONFIG_FILE = join(CONFIG_DIR, 'config.json')
-const TELEMETRY_URL = 'https://unpwned.io/api/cli/telemetry'
+const TELEMETRY_URL = 'https://www.unpwned.io/api/cli/telemetry'
 
 interface TelemetryPayload {
   cli_version: string
@@ -63,13 +63,15 @@ export function disableTelemetry(): void {
   setConfig({ telemetry: false })
 }
 
-export function sendTelemetry(payload: TelemetryPayload): void {
+export async function sendTelemetry(payload: TelemetryPayload): Promise<void> {
   if (!isTelemetryEnabled()) return
 
-  fetch(TELEMETRY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(3000),
-  }).catch(() => {})
+  try {
+    await fetch(TELEMETRY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(3000),
+    })
+  } catch {}
 }

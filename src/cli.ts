@@ -94,8 +94,8 @@ program
     }
 
     if (options.telemetry !== false) {
-      sendTelemetry({
-        cli_version: '1.0.0',
+      await sendTelemetry({
+        cli_version: '1.1.0',
         node_version: process.version,
         os: process.platform,
         score: overallScore,

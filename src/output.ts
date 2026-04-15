@@ -108,7 +108,7 @@ export function printReport(report: ScanReport): void {
   console.log()
   console.log(`  ${chalk.gray(divider)}`)
   console.log(`  ${chalk.gray('Full scan with AI fix suggestions:')}`)
-  console.log(`  ${chalk.cyan('https://unpwned.io?ref=cli')}`)
+  console.log(`  ${chalk.cyan('https://www.unpwned.io?ref=cli')}`)
   console.log()
 }
 

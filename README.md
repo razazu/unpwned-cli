@@ -170,7 +170,7 @@ Weighted average across all checks:
 
 **unpwned** checks 7 categories from the terminal.
 
-[**UNPWNED**](https://unpwned.io?ref=cli) runs **36 security scanners** with:
+[**UNPWNED**](https://www.unpwned.io?ref=cli) runs **36 security scanners** with:
 - AI-powered fix instructions
 - PDF security reports
 - Continuous monitoring
@@ -178,7 +178,7 @@ Weighted average across all checks:
 - OWASP/SOC2/GDPR compliance checks
 
 <p align="center">
-  <a href="https://unpwned.io?ref=cli"><strong>Get your full security report &rarr;</strong></a>
+  <a href="https://www.unpwned.io?ref=cli"><strong>Get your full security report &rarr;</strong></a>
 </p>
 
 ## Contributing
@@ -198,5 +198,5 @@ npm run build
 [MIT](LICENSE) &copy; [Raz Azulay](https://github.com/razazu)
 
 <p align="center">
-  <sub>Built at <a href="https://unpwned.io">UNPWNED</a></sub>
+  <sub>Built at <a href="https://www.unpwned.io">UNPWNED</a></sub>
 </p>

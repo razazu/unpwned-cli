@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1280px;
+    height: 640px;
+    background: #080b10;
+    font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34,197,94,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34,197,94,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .container {
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    z-index: 1;
+  }
+  .left {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-row img {
+    width: 56px;
+    height: 56px;
+  }
+  .logo-text {
+    font-size: 42px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+  .cli-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 2px solid #22c55e;
+    color: #22c55e;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-left: 8px;
+  }
+  .tagline {
+    font-size: 20px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .command {
+    margin-top: 10px;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.03);
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .command .prompt {
+    color: #22c55e;
+  }
+  .command .text {
+    color: #fff;
+    font-size: 18px;
+  }
+  .right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1;
+  }
+  .scanner-line {
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .scanner-name {
+    color: rgba(255,255,255,0.7);
+    width: 140px;
+  }
+  .bar {
+    display: flex;
+    gap: 2px;
+  }
+  .bar-fill {
+    width: 14px;
+    height: 14px;
+    background: #22c55e;
+  }
+  .bar-empty {
+    width: 14px;
+    height: 14px;
+    background: rgba(255,255,255,0.08);
+  }
+  .bar-red { background: #ef4444; }
+  .score { color: rgba(255,255,255,0.5); width: 70px; text-align: right; }
+  .pass { color: #22c55e; }
+  .grade-box {
+    margin-top: 16px;
+    padding: 12px 20px;
+    border: 2px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .grade-label { color: rgba(255,255,255,0.5); font-size: 14px; }
+  .grade-value { color: #eab308; font-size: 28px; font-weight: 800; }
+  .score-value { color: #eab308; font-size: 28px; font-weight: 800; }
+</style>
+</head>
+<body>
+  <div class="grid"></div>
+  <div class="container">
+    <div class="left">
+      <div class="logo-row">
+        <img src="logo.png" alt="">
+        <span class="logo-text">UNPWNED</span>
+        <span class="cli-badge">CLI</span>
+      </div>
+      <div class="tagline">Website security scanner</div>
+      <div class="command">
+        <span class="prompt">$ </span><span class="text">npx unpwned scan yoursite.com</span>
+      </div>
+    </div>
+    <div class="right">
+      <div class="scanner-line">
+        <span class="scanner-name">Headers</span>
+        <div class="bar">
+          <div class="bar-fill bar-red"></div><div class="bar-fill bar-red"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div>
+        </div>
+        <span class="score">25/100</span>
+      </div>
+      <div class="scanner-line">
+        <span class="scanner-name">SSL/TLS</span>
+        <div class="bar">
+          <div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div>
+        </div>
+        <span class="score pass">PASS</span>
+      </div>
+      <div class="scanner-line">
+        <span class="scanner-name">DNS Security</span>
+        <div class="bar">
+          <div class="bar-fill bar-red"></div><div class="bar-fill bar-red"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div>
+        </div>
+        <span class="score">20/100</span>
+      </div>
+      <div class="scanner-line">
+        <span class="scanner-name">Cookies</span>
+        <div class="bar">
+          <div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div>
+        </div>
+        <span class="score pass">PASS</span>
+      </div>
+      <div class="scanner-line">
+        <span class="scanner-name">CORS</span>
+        <div class="bar">
+          <div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-empty"></div><div class="bar-empty"></div><div class="bar-empty"></div>
+        </div>
+        <span class="score">70/100</span>
+      </div>
+      <div class="scanner-line">
+        <span class="scanner-name">Sensitive Files</span>
+        <div class="bar">
+          <div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div><div class="bar-fill"></div>
+        </div>
+        <span class="score pass">PASS</span>
+      </div>
+      <div class="grade-box">
+        <div><span class="grade-label">Score </span><span class="score-value">62/100</span></div>
+        <div><span class="grade-label">Grade </span><span class="grade-value">C</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

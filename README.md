@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="assets/logo.png" alt="UNPWNED" width="120">
+  <img src="assets/logo.png" alt="UNPWNED" width="280">
 </p>
-
-<h1 align="center">unpwned</h1>
 
 <p align="center">
   <strong>Website security scanner in your terminal.</strong><br>

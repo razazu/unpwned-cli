@@ -4,7 +4,7 @@
   "description": "Website security scanner in your terminal. Zero config. One command.",
   "type": "module",
   "bin": {
-    "unpwned": "./bin/unpwned.js"
+    "unpwned": "bin/unpwned.js"
   },
   "main": "./dist/cli.js",
   "files": [
@@ -35,7 +35,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/razazu/unpwned-cli"
+    "url": "git+https://github.com/razazu/unpwned-cli.git"
   },
   "homepage": "https://unpwned.io",
   "engines": {

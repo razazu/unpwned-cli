@@ -1,0 +1,54 @@
+{
+  "name": "unpwned",
+  "version": "1.0.0",
+  "description": "Website security scanner in your terminal. Zero config. One command.",
+  "type": "module",
+  "bin": {
+    "unpwned": "./bin/unpwned.js"
+  },
+  "main": "./dist/cli.js",
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "security",
+    "scanner",
+    "headers",
+    "ssl",
+    "dns",
+    "website",
+    "vulnerability",
+    "cli",
+    "audit",
+    "pentest"
+  ],
+  "author": "Raz Azulay <raz@unpwned.io>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/razazu/unpwned-cli"
+  },
+  "homepage": "https://unpwned.io",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "ora": "^9.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.4"
+  }
+}

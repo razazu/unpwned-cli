@@ -31,7 +31,7 @@ npx unpwned scan yoursite.com
 
 Every website has security blind spots. Most developers don't check until it's too late.
 
-**unpwned** runs 7 security checks in under a second, right from your terminal. No accounts, no API keys, no setup. Just paste a domain and get a score.
+**unpwned** runs 8 security checks in under a second, right from your terminal. No accounts, no API keys, no setup. Just paste a domain and get a score.
 
 ## What It Checks
 
@@ -43,6 +43,7 @@ Every website has security blind spots. Most developers don't check until it's t
   CORS            ███████░░░   70/100  [1 issue]
   Sensitive Files ██████████  100/100  [PASS]
   Tech Stack      Next.js, Vercel
+  Breaches        1 breach found!
 ```
 
 | Check | What It Finds |
@@ -54,6 +55,7 @@ Every website has security blind spots. Most developers don't check until it's t
 | **CORS Policy** | Wildcard origins, credential leaks, origin reflection attacks |
 | **Sensitive Files** | Exposed `.env`, `.git/config`, `package.json`, `wp-config.php`, and more |
 | **Tech Stack** | Detects Next.js, React, Angular, WordPress, nginx, Cloudflare, and others |
+| **Data Breaches** | Known breaches from Have I Been Pwned database |
 
 ## Install
 
@@ -156,17 +158,17 @@ Weighted average across all checks:
 
 ## How It Compares
 
-| Tool | Headers | SSL | DNS | Cookies | CORS | Files | Score | npx | Speed |
-|:-----|:--------|:----|:----|:--------|:-----|:------|:------|:----|:------|
-| **unpwned** | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | <1s |
-| is-website-vulnerable | - | - | - | - | - | - | - | Yes | ~10s |
-| Mozilla Observatory | Yes | - | - | - | - | - | Yes | Dead | - |
-| Lighthouse | Partial | - | - | - | - | - | Yes | Yes | ~30s |
-| Nuclei | - | Yes | - | - | - | Yes | - | - | ~5s |
+| Tool | Headers | SSL | DNS | Cookies | CORS | Files | Breaches | Score | npx | Speed |
+|:-----|:--------|:----|:----|:--------|:-----|:------|:---------|:------|:----|:------|
+| **unpwned** | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | <1s |
+| is-website-vulnerable | - | - | - | - | - | - | - | - | Yes | ~10s |
+| Mozilla Observatory | Yes | - | - | - | - | - | - | Yes | Dead | - |
+| Lighthouse | Partial | - | - | - | - | - | - | Yes | Yes | ~30s |
+| Nuclei | - | Yes | - | - | - | Yes | - | - | - | ~5s |
 
 ## Want the Full Picture?
 
-**unpwned** checks 7 categories from the terminal.
+**unpwned** checks 8 categories from the terminal.
 
 [**UNPWNED**](https://www.unpwned.io?ref=cli) runs **36 security scanners** with:
 - AI-powered fix instructions

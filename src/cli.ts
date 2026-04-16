@@ -7,6 +7,7 @@ import { scanCookies } from './scanners/cookies.js'
 import { scanCORS } from './scanners/cors.js'
 import { scanSensitiveFiles } from './scanners/sensitive-files.js'
 import { scanTechStack } from './scanners/tech-stack.js'
+import { scanBreaches } from './scanners/breaches.js'
 import { calculateScore, getGrade } from './scoring.js'
 import { printReport, printJson } from './output.js'
 import { sendTelemetry, enableTelemetry, disableTelemetry, isTelemetryEnabled, isFirstRun } from './telemetry.js'
@@ -51,6 +52,7 @@ program
       { name: 'CORS', fn: () => scanCORS(url) },
       { name: 'Sensitive Files', fn: () => scanSensitiveFiles(url) },
       { name: 'Tech Stack', fn: () => scanTechStack(url) },
+      { name: 'Breaches', fn: () => scanBreaches(hostname) },
     ]
 
     const settled = await Promise.allSettled(

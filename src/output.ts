@@ -52,6 +52,13 @@ function formatScannerLine(scanner: ScanResult): string {
     return `  ${chalk.white(name)}${techList}`
   }
 
+  if (scanner.name === 'Breaches') {
+    if (scanner.findings.length === 0) {
+      return `  ${chalk.white(name)}${chalk.green('No known breaches')}`
+    }
+    return `  ${chalk.white(name)}${chalk.red.bold(`${scanner.findings.length} breach${scanner.findings.length !== 1 ? 'es' : ''} found!`)}`
+  }
+
   const bar = progressBar(scanner.score)
   const scoreText = colorScore(scanner.score, `${String(scanner.score).padStart(3)}/100`)
   const issueCount = scanner.findings.length
@@ -105,10 +112,36 @@ export function printReport(report: ScanReport): void {
     }
   }
 
-  console.log()
-  console.log(`  ${chalk.gray(divider)}`)
-  console.log(`  ${chalk.gray('Full scan with AI fix suggestions:')}`)
-  console.log(`  ${chalk.cyan('https://www.unpwned.io?ref=cli')}`)
+  const issueCount = allFindings.length
+  if (issueCount > 0) {
+    console.log()
+    const boxWidth = 45
+    const border = chalk.gray('\u2502')
+    console.log(`  ${chalk.gray('\u250c' + '\u2500'.repeat(boxWidth) + '\u2510')}`)
+    const headline = `${issueCount} ${issueCount === 1 ? 'vulnerability needs' : 'vulnerabilities need'} your attention`
+    const pad1 = Math.max(0, boxWidth - headline.length)
+    console.log(`  ${border}  ${chalk.bold.white(headline)}${' '.repeat(pad1 - 2)}${border}`)
+    console.log(`  ${border}${' '.repeat(boxWidth)}${border}`)
+    const features = [
+      '\u25b8 Step-by-step fix instructions',
+      '\u25b8 PDF security report',
+      '\u25b8 SOC2 / GDPR / OWASP compliance',
+      '\u25b8 AI-powered remediation',
+    ]
+    for (const feat of features) {
+      const pad = Math.max(0, boxWidth - feat.length)
+      console.log(`  ${border}  ${chalk.green(feat)}${' '.repeat(pad - 2)}${border}`)
+    }
+    console.log(`  ${border}${' '.repeat(boxWidth)}${border}`)
+    const cta = 'Scan deeper: unpwned.io?ref=cli'
+    const pad2 = Math.max(0, boxWidth - cta.length)
+    console.log(`  ${border}  ${chalk.cyan(cta)}${' '.repeat(pad2 - 2)}${border}`)
+    console.log(`  ${chalk.gray('\u2514' + '\u2500'.repeat(boxWidth) + '\u2518')}`)
+  } else {
+    console.log()
+    console.log(`  ${chalk.green.bold('\u2713 No vulnerabilities found. Your site looks solid.')}`)
+    console.log(`  ${chalk.gray('Deep scan available at:')} ${chalk.cyan('unpwned.io?ref=cli')}`)
+  }
   console.log()
 }
 

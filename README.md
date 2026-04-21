@@ -98,6 +98,25 @@ Use this in CI to **fail builds** when security drops below threshold.
 
 ### GitHub Actions
 
+The **recommended** way is the official [`unpwned-action`](https://github.com/razazu/unpwned-action) which wraps the CLI with better output, PR comments, and fail thresholds:
+
+```yaml
+name: Security Scan
+on: [push, pull_request]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: razazu/unpwned-action@v1
+        with:
+          domain: yoursite.com
+          fail-on: high          # or critical, medium, low, none
+          comment-on-pr: true    # posts results as a PR comment
+```
+
+Or call the CLI directly:
+
 ```yaml
 name: Security Audit
 on:
@@ -110,8 +129,7 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - name: Run security scan
-        run: npx unpwned scan yoursite.com
+      - run: npx unpwned scan yoursite.com
 ```
 
 ### GitLab CI
@@ -180,6 +198,11 @@ Weighted average across all checks:
 <p align="center">
   <a href="https://www.unpwned.io?ref=cli"><strong>Get your full security report &rarr;</strong></a>
 </p>
+
+## Related
+
+- [**UNPWNED GitHub Action**](https://github.com/razazu/unpwned-action) - Run this scan on every push or pull request
+- [**UNPWNED Web**](https://www.unpwned.io?ref=cli) - Full platform with 700+ checks, AI fix prompts, and continuous monitoring
 
 ## Contributing
 

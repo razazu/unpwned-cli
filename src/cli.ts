@@ -11,6 +11,7 @@ import { scanBreaches } from './scanners/breaches.js'
 import { calculateScore, getGrade } from './scoring.js'
 import { printReport, printJson } from './output.js'
 import { sendTelemetry, enableTelemetry, disableTelemetry, isTelemetryEnabled, isFirstRun } from './telemetry.js'
+import { VERSION } from './version.js'
 import type { ScanResult, ScanReport } from './types.js'
 
 const program = new Command()
@@ -18,7 +19,7 @@ const program = new Command()
 program
   .name('unpwned')
   .description('Website security scanner. Zero config. One command.')
-  .version('1.0.0')
+  .version(VERSION)
 
 program
   .command('scan')
@@ -97,7 +98,7 @@ program
 
     if (options.telemetry !== false) {
       await sendTelemetry({
-        cli_version: '1.1.0',
+        cli_version: VERSION,
         node_version: process.version,
         os: process.platform,
         score: overallScore,

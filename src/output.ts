@@ -1,5 +1,6 @@
 import chalk from 'chalk'
 import type { ScanReport, ScanResult, Severity } from './types.js'
+import { VERSION } from './version.js'
 
 const SEVERITY_ORDER: Record<Severity, number> = {
   critical: 0,
@@ -77,8 +78,10 @@ export function printReport(report: ScanReport): void {
   const width = 44
 
   console.log()
+  const title = `UNPWNED Security Scanner v${VERSION}`
+  const titlePadding = Math.max(0, width - (title.length + 3))
   console.log(`  ${chalk.cyan('\u2554' + '\u2550'.repeat(width) + '\u2557')}`)
-  console.log(`  ${chalk.cyan('\u2551')}   ${chalk.bold.white('UNPWNED Security Scanner v1.0')}${' '.repeat(width - 32)}${chalk.cyan('\u2551')}`)
+  console.log(`  ${chalk.cyan('\u2551')}   ${chalk.bold.white(title)}${' '.repeat(titlePadding)}${chalk.cyan('\u2551')}`)
   console.log(`  ${chalk.cyan('\u255a' + '\u2550'.repeat(width) + '\u255d')}`)
   console.log()
 

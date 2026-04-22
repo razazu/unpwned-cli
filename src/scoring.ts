@@ -3,11 +3,12 @@ import type { ScanResult } from './types.js'
 const WEIGHTS: Record<string, number> = {
   'Headers': 0.25,
   'SSL/TLS': 0.20,
-  'DNS Security': 0.20,
+  'DNS Security': 0.15,
   'Cookies': 0.10,
   'CORS': 0.10,
   'Sensitive Files': 0.10,
-  'Tech Stack': 0.05,
+  'Breaches': 0.10,
+  'Tech Stack': 0,
 }
 
 export function calculateScore(results: ScanResult[]): number {

@@ -14,6 +14,7 @@ function makeAllScanners(score: number): ScanResult[] {
     makeScanResult('Cookies', score),
     makeScanResult('CORS', score),
     makeScanResult('Sensitive Files', score),
+    makeScanResult('Breaches', score),
     makeScanResult('Tech Stack', score),
   ]
 }
@@ -27,11 +28,12 @@ describe('calculateScore', () => {
       makeScanResult('Cookies', 100),
       makeScanResult('CORS', 100),
       makeScanResult('Sensitive Files', 100),
+      makeScanResult('Breaches', 100),
       makeScanResult('Tech Stack', 100),
     ]
-    // 50*0.25 + 100*0.20 + 0*0.20 + 100*0.10 + 100*0.10 + 100*0.10 + 100*0.05
-    // = 12.5 + 20 + 0 + 10 + 10 + 10 + 5 = 67.5 -> 68
-    expect(calculateScore(results)).toBe(68)
+    // 50*0.25 + 100*0.20 + 0*0.15 + 100*0.10 + 100*0.10 + 100*0.10 + 100*0.10 + 100*0
+    // = 12.5 + 20 + 0 + 10 + 10 + 10 + 10 + 0 = 72.5 -> 73
+    expect(calculateScore(results)).toBe(73)
   })
 
   it('returns 0 when all scanners score 0', () => {
@@ -40,6 +42,35 @@ describe('calculateScore', () => {
 
   it('returns 100 when all scanners score 100', () => {
     expect(calculateScore(makeAllScanners(100))).toBe(100)
+  })
+
+  it('Tech Stack does not affect overall score (informational only)', () => {
+    const withPerfectTech = [
+      makeScanResult('Headers', 0),
+      makeScanResult('SSL/TLS', 0),
+      makeScanResult('DNS Security', 0),
+      makeScanResult('Cookies', 0),
+      makeScanResult('CORS', 0),
+      makeScanResult('Sensitive Files', 0),
+      makeScanResult('Breaches', 0),
+      makeScanResult('Tech Stack', 100),
+    ]
+    expect(calculateScore(withPerfectTech)).toBe(0)
+  })
+
+  it('Breaches contributes to overall score', () => {
+    const withBreaches = [
+      makeScanResult('Headers', 100),
+      makeScanResult('SSL/TLS', 100),
+      makeScanResult('DNS Security', 100),
+      makeScanResult('Cookies', 100),
+      makeScanResult('CORS', 100),
+      makeScanResult('Sensitive Files', 100),
+      makeScanResult('Breaches', 0),
+      makeScanResult('Tech Stack', 100),
+    ]
+    // 25 + 20 + 15 + 10 + 10 + 10 + 0 + 0 = 90
+    expect(calculateScore(withBreaches)).toBe(90)
   })
 
   it('ignores unknown scanner names (weight 0)', () => {

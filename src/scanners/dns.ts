@@ -49,6 +49,7 @@ async function checkDNSSEC(domain: string): Promise<boolean> {
 
 export async function scanDNS(domain: string): Promise<ScanResult> {
   const findings: Finding[] = []
+  const info: string[] = []
   let score = 100
 
   const [hasSPF, hasDMARC, hasDKIM, hasDNSSEC] = await Promise.all([
@@ -59,7 +60,7 @@ export async function scanDNS(domain: string): Promise<ScanResult> {
   ])
 
   if (!hasSPF) {
-    score -= 30
+    score -= 35
     findings.push({
       severity: 'high',
       title: 'Missing SPF record',
@@ -69,7 +70,7 @@ export async function scanDNS(domain: string): Promise<ScanResult> {
   }
 
   if (!hasDMARC) {
-    score -= 30
+    score -= 35
     findings.push({
       severity: 'high',
       title: 'Missing DMARC record',
@@ -78,18 +79,8 @@ export async function scanDNS(domain: string): Promise<ScanResult> {
     })
   }
 
-  if (!hasDKIM) {
-    score -= 20
-    findings.push({
-      severity: 'medium',
-      title: 'No DKIM record found',
-      description:
-        'No DKIM record found for common selectors. DKIM cryptographically signs emails to prove they are unaltered.',
-    })
-  }
-
   if (!hasDNSSEC) {
-    score -= 20
+    score -= 30
     findings.push({
       severity: 'medium',
       title: 'DNSSEC not enabled',
@@ -98,9 +89,18 @@ export async function scanDNS(domain: string): Promise<ScanResult> {
     })
   }
 
+  if (hasDKIM) {
+    info.push('DKIM detected on a common selector')
+  } else {
+    info.push(
+      `DKIM not detected on common selectors (${DKIM_SELECTORS.join(', ')}). A custom selector may be in use - verification not penalized.`,
+    )
+  }
+
   return {
     name: 'DNS Security',
-    score,
+    score: Math.max(0, score),
     findings,
+    ...(info.length > 0 ? { info } : {}),
   }
 }

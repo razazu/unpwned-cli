@@ -203,6 +203,7 @@ Weighted average across all checks:
 
 - [**UNPWNED GitHub Action**](https://github.com/razazu/unpwned-action) - Run this scan on every push or pull request
 - [**UNPWNED Web**](https://www.unpwned.io?ref=cli) - Full platform with 700+ checks, AI fix prompts, and continuous monitoring
+- [**slopsquat-guard**](https://github.com/razazu/slopsquat-guard) - Pre-tool-use hook for Claude Code that blocks AI-hallucinated npm/pip packages before they install. Separate project, same author.
 
 ## Contributing
 

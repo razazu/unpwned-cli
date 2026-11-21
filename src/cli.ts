@@ -10,7 +10,7 @@ import { scanTechStack } from './scanners/tech-stack.js'
 import { scanBreaches } from './scanners/breaches.js'
 import { calculateScore, getGrade } from './scoring.js'
 import { printReport, printJson } from './output.js'
-import { sendTelemetry, enableTelemetry, disableTelemetry, isTelemetryEnabled, isFirstRun } from './telemetry.js'
+import { sendTelemetry, enableTelemetry, disableTelemetry, isTelemetryEnabled, showFirstRunNotice } from './telemetry.js'
 import { VERSION } from './version.js'
 import type { ScanResult, ScanReport } from './types.js'
 
@@ -27,13 +27,7 @@ program
   .option('--json', 'Output results as JSON')
   .option('--no-telemetry', 'Disable telemetry for this scan')
   .action(async (target: string, options: { json?: boolean; telemetry?: boolean }) => {
-    if (isFirstRun()) {
-      console.log(
-        '\n  Anonymous telemetry is enabled to help improve UNPWNED.' +
-        '\n  No URLs, domains, or IPs are collected.' +
-        '\n  Disable anytime: unpwned telemetry disable\n'
-      )
-    }
+    showFirstRunNotice(options.telemetry !== false)
 
     let url = target.replace(/\/+$/, '')
     if (!/^https?:\/\//i.test(url)) {

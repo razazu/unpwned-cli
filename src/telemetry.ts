@@ -2,9 +2,20 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-const CONFIG_DIR = join(homedir(), '.unpwned')
-const CONFIG_FILE = join(CONFIG_DIR, 'config.json')
 const TELEMETRY_URL = 'https://www.unpwned.io/api/cli/telemetry'
+
+const FIRST_RUN_NOTICE =
+  '\n  Anonymous telemetry is enabled to help improve UNPWNED.' +
+  '\n  No URLs, domains, or IPs are collected.' +
+  '\n  Disable anytime: unpwned telemetry disable\n'
+
+function configDir(): string {
+  return join(homedir(), '.unpwned')
+}
+
+function configFile(): string {
+  return join(configDir(), 'config.json')
+}
 
 interface TelemetryPayload {
   cli_version: string
@@ -25,8 +36,8 @@ interface TelemetryPayload {
 
 function getConfig(): { telemetry: boolean } {
   try {
-    if (!existsSync(CONFIG_FILE)) return { telemetry: true }
-    const content = readFileSync(CONFIG_FILE, 'utf-8')
+    if (!existsSync(configFile())) return { telemetry: true }
+    const content = readFileSync(configFile(), 'utf-8')
     return JSON.parse(content)
   } catch {
     return { telemetry: true }
@@ -35,17 +46,30 @@ function getConfig(): { telemetry: boolean } {
 
 function setConfig(config: { telemetry: boolean }): void {
   try {
-    if (!existsSync(CONFIG_DIR)) {
-      mkdirSync(CONFIG_DIR, { recursive: true })
+    if (!existsSync(configDir())) {
+      mkdirSync(configDir(), { recursive: true })
     }
-    writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2))
+    writeFileSync(configFile(), JSON.stringify(config, null, 2))
   } catch {
     // Silently fail
   }
 }
 
 export function isFirstRun(): boolean {
-  return !existsSync(CONFIG_FILE)
+  return !existsSync(configFile())
+}
+
+export function showFirstRunNotice(
+  telemetryRequested: boolean,
+  write: (message: string) => void = (message) => {
+    process.stderr.write(`${message}\n`)
+  },
+): boolean {
+  if (!telemetryRequested || !isTelemetryEnabled() || !isFirstRun()) return false
+
+  write(FIRST_RUN_NOTICE)
+  setConfig({ telemetry: true })
+  return true
 }
 
 export function isTelemetryEnabled(): boolean {

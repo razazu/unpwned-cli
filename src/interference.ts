@@ -1,3 +1,4 @@
+import { PAGE_TIMEOUT_MS } from './connection.js'
 import type { ScanInterference, ScanResult } from './types.js'
 
 const BLOCK_STATUSES = new Set([403, 406, 429, 503])
@@ -94,26 +95,22 @@ export function detectInterference(status: number, headers: Headers, body: strin
   return null
 }
 
-export async function fetchPage(url: string, init: RequestInit = {}): Promise<FetchedPage | null> {
+export async function requestPage(url: string, init: RequestInit = {}): Promise<FetchedPage> {
+  const response = await fetch(url, {
+    redirect: 'follow',
+    signal: AbortSignal.timeout(PAGE_TIMEOUT_MS),
+    ...init,
+  })
+
+  let body = ''
   try {
-    const response = await fetch(url, {
-      redirect: 'follow',
-      signal: AbortSignal.timeout(10000),
-      ...init,
-    })
+    body = await response.text()
+  } catch {}
 
-    let body = ''
-    try {
-      body = await response.text()
-    } catch {}
-
-    return {
-      response,
-      body,
-      interference: detectInterference(response.status, response.headers, body),
-    }
-  } catch {
-    return null
+  return {
+    response,
+    body,
+    interference: detectInterference(response.status, response.headers, body),
   }
 }
 

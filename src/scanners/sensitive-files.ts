@@ -164,18 +164,27 @@ async function probePath(
   }
 }
 
+function probeDirectories(pathname: string): string[] {
+  const segments = pathname.split('/').filter(Boolean)
+  if (segments.at(-1)?.includes('.')) segments.pop()
+  return segments.length > 0 ? ['', `/${segments.join('/')}`] : ['']
+}
+
 export async function scanSensitiveFiles(url: string): Promise<ScanResult> {
-  const baseUrl = url.replace(/\/+$/, '')
+  const { origin, pathname } = new URL(url)
   const findings: Finding[] = []
   const info: string[] = []
   let deductions = 0
 
-  const checks = SENSITIVE_PATHS.map(async (check) => ({
-    exposed: await probePath(baseUrl, check),
-    check,
-  }))
+  const checks = probeDirectories(pathname).flatMap((directory) =>
+    SENSITIVE_PATHS.map(async (check) => ({
+      exposed: await probePath(`${origin}${directory}`, check),
+      location: `${directory}${check.path}`,
+      check,
+    })),
+  )
 
-  const securityTxtCheck = fetch(`${baseUrl}/.well-known/security.txt`, {
+  const securityTxtCheck = fetch(`${origin}/.well-known/security.txt`, {
     method: 'HEAD',
     redirect: 'follow',
     signal: AbortSignal.timeout(3000),
@@ -190,11 +199,11 @@ export async function scanSensitiveFiles(url: string): Promise<ScanResult> {
 
   for (const result of results) {
     if (result.status === 'fulfilled' && result.value.exposed) {
-      const { check } = result.value
+      const { check, location } = result.value
       deductions += check.points
       findings.push({
         severity: check.severity,
-        title: `Exposed: ${check.path}`,
+        title: `Exposed: ${location}`,
         description: check.desc,
       })
     }

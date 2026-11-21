@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { blockedResult, describeInterference, detectInterference, fetchPage } from './interference.js'
+import { blockedResult, describeInterference, detectInterference, requestPage } from './interference.js'
 
 function headers(init: Record<string, string> = {}): Headers {
   return new Headers(init)
@@ -131,7 +131,7 @@ describe('detectInterference', () => {
   })
 })
 
-describe('fetchPage', () => {
+describe('requestPage', () => {
   afterEach(() => {
     vi.unstubAllGlobals()
   })
@@ -142,37 +142,38 @@ describe('fetchPage', () => {
       vi.fn(async () => new Response('checking your browser', { status: 403, headers: { 'cf-mitigated': 'challenge' } })),
     )
 
-    const page = await fetchPage('https://example.com')
+    const page = await requestPage('https://example.com')
 
-    expect(page?.body).toBe('checking your browser')
-    expect(page?.response.status).toBe(403)
-    expect(page?.interference).toEqual({ status: 403, provider: 'Cloudflare', reason: 'challenge' })
+    expect(page.body).toBe('checking your browser')
+    expect(page.response.status).toBe(403)
+    expect(page.interference).toEqual({ status: 403, provider: 'Cloudflare', reason: 'challenge' })
   })
 
   it('reports no interference when the page loads normally', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('<html>ok</html>', { status: 200 })))
 
-    expect((await fetchPage('https://example.com'))?.interference).toBeNull()
+    expect((await requestPage('https://example.com')).interference).toBeNull()
   })
 
   it('passes request options through', async () => {
     const fetchMock = vi.fn(async () => new Response('ok'))
     vi.stubGlobal('fetch', fetchMock)
 
-    await fetchPage('https://example.com', { headers: { Origin: 'https://evil.com' } })
+    await requestPage('https://example.com', { headers: { Origin: 'https://evil.com' } })
 
     expect(fetchMock.mock.calls[0][1]).toMatchObject({ headers: { Origin: 'https://evil.com' }, redirect: 'follow' })
   })
 
-  it('returns null when the request fails', async () => {
+  it('rejects with the original error when the request fails', async () => {
+    const failure = new TypeError('fetch failed')
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => {
-        throw new TypeError('fetch failed')
+        throw failure
       }),
     )
 
-    expect(await fetchPage('https://example.com')).toBeNull()
+    await expect(requestPage('https://example.com')).rejects.toBe(failure)
   })
 })
 

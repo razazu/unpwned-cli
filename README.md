@@ -76,6 +76,9 @@ unpwned scan example.com
 # Basic scan
 unpwned scan example.com
 
+# A full URL works too
+unpwned scan https://example.com/blog
+
 # JSON output (for CI/CD pipelines)
 unpwned scan example.com --json
 
@@ -92,9 +95,22 @@ done
 | `0` | Score >= 50 (passing) |
 | `1` | Score < 50 (failing) |
 | `2` | The target blocked the scan, so the result is partial |
-| `3` | The target is not a valid domain or URL, or it does not resolve |
+| `3` | The target is not a valid domain or URL, does not resolve, or cannot be reached |
 
 Use this in CI to **fail builds** when security drops below threshold.
+
+### Unreachable Targets
+
+If the site cannot be loaded, `unpwned` stops with a one-line error and exit code `3` instead of scoring a site it never saw:
+
+```
+$ unpwned scan https://expired.badssl.com
+unpwned: Could not connect to https://expired.badssl.com: the certificate has expired.
+```
+
+This covers a refused or timed out connection, a certificate that the client rejects, and a site that stops responding partway through the scan. No report is written in `--json` mode either, so check the exit code before parsing the output.
+
+When the target URL has a path, Sensitive Files are checked at the site root and under that path. The query string is ignored.
 
 ### Blocked Scans
 
@@ -180,7 +196,7 @@ Weighted average across all checks:
 
 Checks that do not apply are left out of the average and marked `not applicable`. DNS Security is skipped for IP addresses and for subdomains of hosting platforms such as `*.vercel.app` or `*.netlify.app`, because that DNS is not yours to configure. For a subdomain of your own domain, SPF and DMARC records on a parent domain count.
 
-A certificate that browsers refuse (expired, self-signed, issued for another hostname, or from an untrusted authority) scores 0 for SSL/TLS.
+A certificate that browsers refuse (expired, self-signed, issued for another hostname, or from an untrusted authority) scores 0 for SSL/TLS. When the target itself is served with such a certificate, the page cannot be loaded, so the scan stops with exit code `3` and names the problem.
 
 ### Grades
 

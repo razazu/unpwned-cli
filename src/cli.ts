@@ -45,6 +45,11 @@ function failedResult(name: string, reason: unknown): ScanResult {
   }
 }
 
+function exitUnreachable(error: TargetError): never {
+  process.stderr.write(`unpwned: ${error.message}\n`)
+  process.exit(EXIT_UNREACHABLE)
+}
+
 const program = new Command()
 
 program
@@ -65,11 +70,7 @@ program
       scanTarget = parseTarget(target)
       await assertResolvable(scanTarget.hostname)
     } catch (error) {
-      if (error instanceof TargetError) {
-        process.stderr.write(`unpwned: ${error.message}
-`)
-        process.exit(EXIT_UNREACHABLE)
-      }
+      if (error instanceof TargetError) exitUnreachable(error)
       throw error
     }
 
@@ -78,21 +79,30 @@ program
     const spinner = ora(`Scanning ${url}...`).start()
     const startTime = Date.now()
 
-    const httpScan = runHttpScanners(url).catch(
-      (reason: unknown): HttpScanOutcome => ({
-        results: HTTP_SCANNER_NAMES.map((name) => failedResult(name, reason)),
-        interference: null,
-      }),
-    )
-
     const directScanners: { name: string; fn: () => Promise<ScanResult> }[] = [
       { name: 'SSL/TLS', fn: () => scanSSL(hostname, tlsPort) },
       { name: 'DNS Security', fn: () => scanDNS(hostname) },
       { name: 'Breaches', fn: () => scanBreaches(hostname) },
     ]
 
-    const directSettled = await Promise.allSettled(directScanners.map((s) => s.fn()))
-    const { results: httpResults, interference } = await httpScan
+    const directScan = Promise.allSettled(directScanners.map((s) => s.fn()))
+
+    let httpOutcome: HttpScanOutcome
+    try {
+      httpOutcome = await runHttpScanners(url)
+    } catch (error) {
+      if (error instanceof TargetError) {
+        spinner.stop()
+        exitUnreachable(error)
+      }
+      httpOutcome = {
+        results: HTTP_SCANNER_NAMES.map((name) => failedResult(name, error)),
+        interference: null,
+      }
+    }
+
+    const directSettled = await directScan
+    const { results: httpResults, interference } = httpOutcome
 
     const byName = new Map<string, ScanResult>()
     for (const result of httpResults) {

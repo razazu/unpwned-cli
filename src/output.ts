@@ -50,7 +50,8 @@ function formatScannerLine(scanner: ScanResult): string {
   const name = scanner.name.padEnd(16)
 
   if (scanner.skipped) {
-    return `  ${chalk.white(name)}${chalk.gray('not checked (scan blocked)')}`
+    const note = scanner.skipReason === 'not-applicable' ? 'not applicable' : 'not checked (scan blocked)'
+    return `  ${chalk.white(name)}${chalk.gray(note)}`
   }
 
   if (scanner.name === 'Tech Stack') {
@@ -95,12 +96,14 @@ export function printReport(report: ScanReport): void {
   console.log(`  ${chalk.gray('Scanned in')} ${chalk.white(durationSec.toFixed(1) + 's')}`)
   console.log()
 
-  const skipped = report.scanners.filter((s) => s.skipped)
-  const checkedCount = report.scanners.length - skipped.length
+  const notApplicable = report.scanners.filter((s) => s.skipped && s.skipReason === 'not-applicable')
+  const blocked = report.scanners.filter((s) => s.skipped && s.skipReason !== 'not-applicable')
+  const applicableCount = report.scanners.length - notApplicable.length
+  const checkedCount = applicableCount - blocked.length
 
   if (report.interference) {
     console.log(`  ${chalk.yellow.bold('! The target blocked this scan')} ${chalk.yellow(`(${describeInterference(report.interference)})`)}`)
-    console.log(`  ${chalk.yellow(`  Not checked: ${skipped.map((s) => s.name).join(', ')}.`)}`)
+    console.log(`  ${chalk.yellow(`  Not checked: ${blocked.map((s) => s.name).join(', ')}.`)}`)
     console.log(`  ${chalk.yellow('  The score below covers only the checks that ran.')}`)
     console.log()
   }
@@ -109,11 +112,15 @@ export function printReport(report: ScanReport): void {
     console.log(formatScannerLine(scanner))
   }
 
+  for (const scanner of notApplicable) {
+    console.log(`  ${chalk.gray(`Note: ${scanner.name} is not scored. ${scanner.info?.[0] ?? ''}`.trim())}`)
+  }
+
   console.log()
   const divider = '\u2500'.repeat(44)
   console.log(`  ${chalk.gray(divider)}`)
   if (report.interference) {
-    console.log(`  ${chalk.bold.white('Partial Score:')} ${colorScore(report.overallScore, `${report.overallScore}/100`)}  ${chalk.gray(`(${checkedCount} of ${report.scanners.length} checks)`)}`)
+    console.log(`  ${chalk.bold.white('Partial Score:')} ${colorScore(report.overallScore, `${report.overallScore}/100`)}  ${chalk.gray(`(${checkedCount} of ${applicableCount} checks)`)}`)
   } else {
     console.log(`  ${chalk.bold.white('Overall Score:')} ${colorScore(report.overallScore, `${report.overallScore}/100`)}  ${chalk.bold.white('Grade:')} ${colorGrade(report.grade)}`)
   }

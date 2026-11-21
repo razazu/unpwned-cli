@@ -1,33 +1,49 @@
 import dns from 'node:dns'
+import { isIP } from 'node:net'
+import { platformSuffix } from '../platforms.js'
 import type { Finding, ScanResult } from '../types.js'
 
 const DKIM_SELECTORS = ['default', 'google', 'selector1', 'selector2', 'k1']
 
-async function checkSPF(domain: string): Promise<boolean> {
+function domainCandidates(domain: string): string[] {
+  const labels = domain.split('.').filter(Boolean)
+  const candidates: string[] = []
+  for (let start = 0; start <= labels.length - 2; start++) {
+    candidates.push(labels.slice(start).join('.'))
+  }
+  return candidates
+}
+
+async function hasTxtRecord(name: string, marker: string): Promise<boolean> {
   try {
-    const records = await dns.promises.resolveTxt(domain)
-    return records.some((parts) => parts.join('').includes('v=spf1'))
+    const records = await dns.promises.resolveTxt(name)
+    return records.some((parts) => parts.join('').includes(marker))
   } catch {
     return false
   }
 }
 
-async function checkDMARC(domain: string): Promise<boolean> {
-  try {
-    const records = await dns.promises.resolveTxt('_dmarc.' + domain)
-    return records.some((parts) => parts.join('').includes('v=DMARC1'))
-  } catch {
-    return false
-  }
+async function anyOf(checks: Promise<boolean>[]): Promise<boolean> {
+  return (await Promise.all(checks)).some(Boolean)
 }
 
-async function checkDKIM(domain: string): Promise<boolean> {
-  for (const selector of DKIM_SELECTORS) {
-    try {
-      const records = await dns.promises.resolveTxt(selector + '._domainkey.' + domain)
-      if (records.length > 0) return true
-    } catch {
-      continue
+function checkSPF(candidates: string[]): Promise<boolean> {
+  return anyOf(candidates.map((domain) => hasTxtRecord(domain, 'v=spf1')))
+}
+
+function checkDMARC(candidates: string[]): Promise<boolean> {
+  return anyOf(candidates.map((domain) => hasTxtRecord('_dmarc.' + domain, 'v=DMARC1')))
+}
+
+async function checkDKIM(candidates: string[]): Promise<boolean> {
+  for (const domain of candidates) {
+    for (const selector of DKIM_SELECTORS) {
+      try {
+        const records = await dns.promises.resolveTxt(selector + '._domainkey.' + domain)
+        if (records.length > 0) return true
+      } catch {
+        continue
+      }
     }
   }
   return false
@@ -47,15 +63,40 @@ async function checkDNSSEC(domain: string): Promise<boolean> {
   }
 }
 
+function notApplicable(reason: string): ScanResult {
+  return {
+    name: 'DNS Security',
+    score: 0,
+    findings: [],
+    info: [reason],
+    skipped: true,
+    skipReason: 'not-applicable',
+  }
+}
+
 export async function scanDNS(domain: string): Promise<ScanResult> {
+  if (isIP(domain)) {
+    return notApplicable('DNS checks do not apply to an IP address.')
+  }
+
+  const platform = platformSuffix(domain)
+  if (platform) {
+    return notApplicable(`DNS for *.${platform} is managed by the hosting platform.`)
+  }
+
+  const candidates = domainCandidates(domain)
+  if (candidates.length === 0) {
+    return notApplicable('DNS checks do not apply to a single-label host name.')
+  }
+
   const findings: Finding[] = []
   const info: string[] = []
   let score = 100
 
   const [hasSPF, hasDMARC, hasDKIM, hasDNSSEC] = await Promise.all([
-    checkSPF(domain),
-    checkDMARC(domain),
-    checkDKIM(domain),
+    checkSPF(candidates),
+    checkDMARC(candidates),
+    checkDKIM(candidates),
     checkDNSSEC(domain),
   ])
 

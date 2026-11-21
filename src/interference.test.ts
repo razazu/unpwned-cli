@@ -184,6 +184,7 @@ describe('blockedResult', () => {
       findings: [],
       info: ['Not checked: the target blocked the scan'],
       skipped: true,
+      skipReason: 'blocked',
     })
   })
 })

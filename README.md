@@ -49,7 +49,7 @@ Every website has security blind spots. Most developers don't check until it's t
 | Check | What It Finds |
 |:------|:-------------|
 | **Security Headers** | Missing CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy |
-| **SSL/TLS** | Expired certs, weak protocols, self-signed certificates, expiry warnings |
+| **SSL/TLS** | Expired, self-signed, mismatched or untrusted certificates, incomplete chains, weak protocols, expiry warnings |
 | **DNS Security** | Missing SPF, DMARC, DKIM, DNSSEC |
 | **Cookie Security** | Missing Secure, HttpOnly, SameSite flags |
 | **CORS Policy** | Wildcard origins, credential leaks, origin reflection attacks |
@@ -92,6 +92,7 @@ done
 | `0` | Score >= 50 (passing) |
 | `1` | Score < 50 (failing) |
 | `2` | The target blocked the scan, so the result is partial |
+| `3` | The target is not a valid domain or URL, or it does not resolve |
 
 Use this in CI to **fail builds** when security drops below threshold.
 
@@ -103,7 +104,7 @@ If a WAF or rate limiter answers with a block or challenge page, `unpwned` says 
 - The score covers only the checks that ran and is shown as a partial score.
 - The exit code is `2`, so a blocked scan never passes a CI gate by accident.
 
-In `--json` output, a blocked scan adds an `interference` object (`status`, `provider`, `reason`) and marks each unchecked scanner with `"skipped": true`. A one-line explanation is also written to stderr.
+In `--json` output, a blocked scan adds an `interference` object (`status`, `provider`, `reason`) and marks each unchecked scanner with `"skipped": true` and `"skipReason": "blocked"`. A one-line explanation is also written to stderr.
 
 To get a full scan, allow requests from the network you scan from (for example your CI runners) in your WAF.
 
@@ -159,7 +160,7 @@ security_scan:
 
 ```bash
 # .husky/pre-push
-npx unpwned scan yoursite.com --json | jq '.overallScore >= 70' || exit 1
+npx unpwned scan yoursite.com --json | jq -e '.overallScore >= 70' > /dev/null || exit 1
 ```
 
 ## Scoring
@@ -176,6 +177,10 @@ Weighted average across all checks:
 | Sensitive Files | 10% | Exposed configs and credentials |
 | Data Breaches | 10% | Known breaches tied to the domain |
 | Tech Stack | 0% | Informational, not scored |
+
+Checks that do not apply are left out of the average and marked `not applicable`. DNS Security is skipped for IP addresses and for subdomains of hosting platforms such as `*.vercel.app` or `*.netlify.app`, because that DNS is not yours to configure. For a subdomain of your own domain, SPF and DMARC records on a parent domain count.
+
+A certificate that browsers refuse (expired, self-signed, issued for another hostname, or from an untrusted authority) scores 0 for SSL/TLS.
 
 ### Grades
 

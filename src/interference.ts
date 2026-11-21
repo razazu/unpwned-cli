@@ -124,6 +124,7 @@ export function blockedResult(name: string): ScanResult {
     findings: [],
     info: ['Not checked: the target blocked the scan'],
     skipped: true,
+    skipReason: 'blocked',
   }
 }
 

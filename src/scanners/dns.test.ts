@@ -105,4 +105,57 @@ describe('scanDNS', () => {
     expect(result.findings).toHaveLength(3)
     expect(result.name).toBe('DNS Security')
   })
+
+  it('accepts SPF and DMARC records published on the parent domain', async () => {
+    mockResolveTxt.mockImplementation((name: string) => {
+      if (name === 'example.com') return Promise.resolve([['v=spf1 include:_spf.google.com ~all']])
+      if (name === '_dmarc.example.com') return Promise.resolve([['v=DMARC1; p=reject']])
+      return Promise.reject(Object.assign(new Error('ENODATA'), { code: 'ENODATA' }))
+    })
+
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ AD: true }),
+    })
+
+    const result = await scanDNS('www.example.com')
+
+    expect(result.score).toBe(100)
+    expect(result.findings).toHaveLength(0)
+    expect(result.skipped).toBeUndefined()
+  })
+
+  it('still reports missing records when no parent domain has them', async () => {
+    mockResolveTxt.mockRejectedValue(Object.assign(new Error('ENODATA'), { code: 'ENODATA' }))
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ AD: true }),
+    })
+
+    const result = await scanDNS('app.staging.example.com')
+    const queried = mockResolveTxt.mock.calls.map((call) => call[0] as string)
+
+    expect(result.score).toBe(30)
+    expect(queried).toContain('example.com')
+    expect(queried).toContain('_dmarc.staging.example.com')
+    expect(queried).not.toContain('com')
+  })
+
+  it('does not score DNS for a hosting platform subdomain', async () => {
+    const result = await scanDNS('my-app.vercel.app')
+
+    expect(result.skipped).toBe(true)
+    expect(result.skipReason).toBe('not-applicable')
+    expect(result.findings).toHaveLength(0)
+    expect(result.info?.[0]).toContain('*.vercel.app')
+    expect(mockResolveTxt).not.toHaveBeenCalled()
+  })
+
+  it('does not score DNS for an IP address', async () => {
+    const result = await scanDNS('192.0.2.10')
+
+    expect(result.skipped).toBe(true)
+    expect(result.skipReason).toBe('not-applicable')
+    expect(mockResolveTxt).not.toHaveBeenCalled()
+  })
 })

@@ -94,6 +94,12 @@ done
 
 Use this in CI to **fail builds** when security drops below threshold.
 
+### Blocked Scans
+
+If a WAF or rate limiter answers with a block or challenge page, `unpwned` says so instead of scoring that page as your site. The checks that depend on the page (Headers, Cookies, CORS, Sensitive Files, Tech Stack) are marked as not checked, and the score covers only the checks that ran.
+
+In `--json` output, a blocked scan adds an `interference` object (`status`, `provider`, `reason`) and marks each unchecked scanner with `"skipped": true`.
+
 ## CI/CD Integration
 
 ### GitHub Actions

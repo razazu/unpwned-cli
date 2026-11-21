@@ -1,6 +1,7 @@
 import chalk from 'chalk'
 import type { ScanReport, ScanResult, Severity } from './types.js'
 import { VERSION } from './version.js'
+import { describeInterference } from './interference.js'
 
 const SEVERITY_ORDER: Record<Severity, number> = {
   critical: 0,
@@ -48,6 +49,10 @@ function progressBar(score: number): string {
 function formatScannerLine(scanner: ScanResult): string {
   const name = scanner.name.padEnd(16)
 
+  if (scanner.skipped) {
+    return `  ${chalk.white(name)}${chalk.gray('not checked (scan blocked)')}`
+  }
+
   if (scanner.name === 'Tech Stack') {
     const techList = scanner.info && scanner.info.length > 0 ? scanner.info.join(', ') : 'Unknown'
     return `  ${chalk.white(name)}${techList}`
@@ -90,6 +95,16 @@ export function printReport(report: ScanReport): void {
   console.log(`  ${chalk.gray('Scanned in')} ${chalk.white(durationSec.toFixed(1) + 's')}`)
   console.log()
 
+  const skipped = report.scanners.filter((s) => s.skipped)
+  const checkedCount = report.scanners.length - skipped.length
+
+  if (report.interference) {
+    console.log(`  ${chalk.yellow.bold('! The target blocked this scan')} ${chalk.yellow(`(${describeInterference(report.interference)})`)}`)
+    console.log(`  ${chalk.yellow(`  Not checked: ${skipped.map((s) => s.name).join(', ')}.`)}`)
+    console.log(`  ${chalk.yellow('  The score below covers only the checks that ran.')}`)
+    console.log()
+  }
+
   for (const scanner of report.scanners) {
     console.log(formatScannerLine(scanner))
   }
@@ -97,7 +112,11 @@ export function printReport(report: ScanReport): void {
   console.log()
   const divider = '\u2500'.repeat(44)
   console.log(`  ${chalk.gray(divider)}`)
-  console.log(`  ${chalk.bold.white('Overall Score:')} ${colorScore(report.overallScore, `${report.overallScore}/100`)}  ${chalk.bold.white('Grade:')} ${colorGrade(report.grade)}`)
+  if (report.interference) {
+    console.log(`  ${chalk.bold.white('Partial Score:')} ${colorScore(report.overallScore, `${report.overallScore}/100`)}  ${chalk.gray(`(${checkedCount} of ${report.scanners.length} checks)`)}`)
+  } else {
+    console.log(`  ${chalk.bold.white('Overall Score:')} ${colorScore(report.overallScore, `${report.overallScore}/100`)}  ${chalk.bold.white('Grade:')} ${colorGrade(report.grade)}`)
+  }
   console.log(`  ${chalk.gray(divider)}`)
 
   const allFindings = report.scanners
@@ -140,6 +159,9 @@ export function printReport(report: ScanReport): void {
     const pad2 = Math.max(0, boxWidth - cta.length)
     console.log(`  ${border}  ${chalk.cyan(cta)}${' '.repeat(pad2 - 2)}${border}`)
     console.log(`  ${chalk.gray('\u2514' + '\u2500'.repeat(boxWidth) + '\u2518')}`)
+  } else if (report.interference) {
+    console.log()
+    console.log(`  ${chalk.yellow('Scan incomplete. Allow requests from this network and run it again.')}`)
   } else {
     console.log()
     console.log(`  ${chalk.green.bold('\u2713 No vulnerabilities found. Your site looks solid.')}`)

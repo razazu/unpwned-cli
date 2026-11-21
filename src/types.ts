@@ -11,6 +11,13 @@ export interface ScanResult {
   score: number
   findings: Finding[]
   info?: string[]
+  skipped?: boolean
+}
+
+export interface ScanInterference {
+  status: number
+  provider: string | null
+  reason: 'challenge' | 'blocked' | 'rate-limited'
 }
 
 export interface ScanReport {
@@ -20,4 +27,5 @@ export interface ScanReport {
   overallScore: number
   grade: string
   duration: number
+  interference?: ScanInterference
 }

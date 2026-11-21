@@ -136,3 +136,44 @@ describe('getGrade', () => {
     expect(getGrade(0)).toBe('F')
   })
 })
+
+describe('calculateScore with skipped scanners', () => {
+  it('scores only the scanners that ran', () => {
+    const results: ScanResult[] = [
+      { name: 'Headers', score: 0, findings: [], skipped: true },
+      { name: 'Cookies', score: 0, findings: [], skipped: true },
+      { name: 'CORS', score: 0, findings: [], skipped: true },
+      { name: 'Sensitive Files', score: 0, findings: [], skipped: true },
+      { name: 'Tech Stack', score: 0, findings: [], skipped: true },
+      makeScanResult('SSL/TLS', 100),
+      makeScanResult('DNS Security', 100),
+      makeScanResult('Breaches', 100),
+    ]
+
+    expect(calculateScore(results)).toBe(100)
+  })
+
+  it('weights the remaining scanners against each other', () => {
+    const results: ScanResult[] = [
+      { name: 'Headers', score: 0, findings: [], skipped: true },
+      makeScanResult('SSL/TLS', 100),
+      makeScanResult('DNS Security', 0),
+      makeScanResult('Breaches', 100),
+    ]
+
+    expect(calculateScore(results)).toBe(67)
+  })
+
+  it('returns 0 when every scanner was skipped', () => {
+    const results: ScanResult[] = [
+      { name: 'Headers', score: 0, findings: [], skipped: true },
+      { name: 'Cookies', score: 0, findings: [], skipped: true },
+    ]
+
+    expect(calculateScore(results)).toBe(0)
+  })
+
+  it('keeps the original result when nothing was skipped', () => {
+    expect(calculateScore(makeAllScanners(80))).toBe(80)
+  })
+})

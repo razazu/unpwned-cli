@@ -10,9 +10,22 @@ import { scanTechStack } from './scanners/tech-stack.js'
 import { scanBreaches } from './scanners/breaches.js'
 import { calculateScore, getGrade } from './scoring.js'
 import { printReport, printJson } from './output.js'
+import { probeInterference } from './interference.js'
 import { sendTelemetry, enableTelemetry, disableTelemetry, isTelemetryEnabled, showFirstRunNotice } from './telemetry.js'
 import { VERSION } from './version.js'
 import type { ScanResult, ScanReport } from './types.js'
+
+const HTTP_SCANNERS = new Set(['Headers', 'Cookies', 'CORS', 'Sensitive Files', 'Tech Stack'])
+
+function skippedResult(name: string): ScanResult {
+  return {
+    name,
+    score: 0,
+    findings: [],
+    info: ['Not checked: the target blocked the scan'],
+    skipped: true,
+  }
+}
 
 const program = new Command()
 
@@ -38,6 +51,7 @@ program
 
     const spinner = ora(`Scanning ${url}...`).start()
     const startTime = Date.now()
+    const interferenceProbe = probeInterference(url)
 
     const scannerConfigs: { name: string; fn: () => Promise<ScanResult> }[] = [
       { name: 'Headers', fn: () => scanHeaders(url) },
@@ -51,8 +65,14 @@ program
     ]
 
     const settled = await Promise.allSettled(
-      scannerConfigs.map((s) => s.fn())
+      scannerConfigs.map(async (s) => {
+        if (HTTP_SCANNERS.has(s.name) && (await interferenceProbe)) {
+          return skippedResult(s.name)
+        }
+        return s.fn()
+      })
     )
+    const interference = await interferenceProbe
 
     const results: ScanResult[] = settled.map((result, i) => {
       if (result.status === 'fulfilled') {
@@ -88,6 +108,7 @@ program
       overallScore,
       grade,
       duration,
+      ...(interference && { interference }),
     }
 
     if (options.telemetry !== false) {
@@ -104,8 +125,8 @@ program
           medium: results.reduce((sum, r) => sum + r.findings.filter(f => f.severity === 'medium').length, 0),
           low: results.reduce((sum, r) => sum + r.findings.filter(f => f.severity === 'low').length, 0),
         },
-        scanners_passed: results.filter(r => r.score === 100).length,
-        scanners_failed: results.filter(r => r.score === 0).length,
+        scanners_passed: results.filter(r => !r.skipped && r.score === 100).length,
+        scanners_failed: results.filter(r => !r.skipped && r.score === 0).length,
       })
     }
 

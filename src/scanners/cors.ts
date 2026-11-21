@@ -23,11 +23,15 @@ export async function scanCORS(url: string): Promise<ScanResult> {
     }
   }
 
+  return evaluateCORS(response.headers)
+}
+
+export function evaluateCORS(headers: Headers): ScanResult {
   const findings: Finding[] = []
   let score = 100
 
-  const acao = response.headers.get('access-control-allow-origin')
-  const acac = response.headers.get('access-control-allow-credentials')
+  const acao = headers.get('access-control-allow-origin')
+  const acac = headers.get('access-control-allow-credentials')
 
   if (acao === '*') {
     score -= 30

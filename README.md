@@ -170,11 +170,12 @@ Weighted average across all checks:
 |:------|:-------|:----|
 | Security Headers | 25% | First line of defense against XSS, clickjacking, MIME sniffing |
 | SSL/TLS | 20% | Encryption in transit is non-negotiable |
-| DNS Security | 20% | Email spoofing protection (SPF/DMARC/DKIM) |
+| DNS Security | 15% | Email spoofing protection (SPF/DMARC/DKIM) |
 | Cookie Security | 10% | Session hijacking prevention |
 | CORS Policy | 10% | Cross-origin data theft protection |
 | Sensitive Files | 10% | Exposed configs and credentials |
-| Tech Stack | 5% | Informational (no score penalty) |
+| Data Breaches | 10% | Known breaches tied to the domain |
+| Tech Stack | 0% | Informational, not scored |
 
 ### Grades
 

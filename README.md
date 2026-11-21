@@ -91,14 +91,21 @@ done
 |:-----|:--------|
 | `0` | Score >= 50 (passing) |
 | `1` | Score < 50 (failing) |
+| `2` | The target blocked the scan, so the result is partial |
 
 Use this in CI to **fail builds** when security drops below threshold.
 
 ### Blocked Scans
 
-If a WAF or rate limiter answers with a block or challenge page, `unpwned` says so instead of scoring that page as your site. The checks that depend on the page (Headers, Cookies, CORS, Sensitive Files, Tech Stack) are marked as not checked, and the score covers only the checks that ran.
+If a WAF or rate limiter answers with a block or challenge page, `unpwned` says so instead of scoring that page as your site. This is detected on the first request and again during the scan, so a block that starts halfway through is caught too.
 
-In `--json` output, a blocked scan adds an `interference` object (`status`, `provider`, `reason`) and marks each unchecked scanner with `"skipped": true`.
+- Checks whose requests were blocked (Headers, Cookies, CORS, Sensitive Files, Tech Stack) are marked as not checked.
+- The score covers only the checks that ran and is shown as a partial score.
+- The exit code is `2`, so a blocked scan never passes a CI gate by accident.
+
+In `--json` output, a blocked scan adds an `interference` object (`status`, `provider`, `reason`) and marks each unchecked scanner with `"skipped": true`. A one-line explanation is also written to stderr.
+
+To get a full scan, allow requests from the network you scan from (for example your CI runners) in your WAF.
 
 ## CI/CD Integration
 

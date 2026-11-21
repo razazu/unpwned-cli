@@ -1,29 +1,44 @@
 import { Command } from 'commander'
 import ora from 'ora'
-import { scanHeaders } from './scanners/headers.js'
 import { scanSSL } from './scanners/ssl.js'
 import { scanDNS } from './scanners/dns.js'
-import { scanCookies } from './scanners/cookies.js'
-import { scanCORS } from './scanners/cors.js'
-import { scanSensitiveFiles } from './scanners/sensitive-files.js'
-import { scanTechStack } from './scanners/tech-stack.js'
 import { scanBreaches } from './scanners/breaches.js'
 import { calculateScore, getGrade } from './scoring.js'
 import { printReport, printJson } from './output.js'
-import { probeInterference } from './interference.js'
+import { HTTP_SCANNER_NAMES, runHttpScanners } from './http-scan.js'
+import type { HttpScanOutcome } from './http-scan.js'
+import { describeInterference } from './interference.js'
 import { sendTelemetry, enableTelemetry, disableTelemetry, isTelemetryEnabled, showFirstRunNotice } from './telemetry.js'
 import { VERSION } from './version.js'
 import type { ScanResult, ScanReport } from './types.js'
 
-const HTTP_SCANNERS = new Set(['Headers', 'Cookies', 'CORS', 'Sensitive Files', 'Tech Stack'])
+const SCANNER_ORDER = [
+  'Headers',
+  'SSL/TLS',
+  'DNS Security',
+  'Cookies',
+  'CORS',
+  'Sensitive Files',
+  'Tech Stack',
+  'Breaches',
+]
 
-function skippedResult(name: string): ScanResult {
+const EXIT_PASSED = 0
+const EXIT_FAILED = 1
+const EXIT_BLOCKED = 2
+
+function failedResult(name: string, reason: unknown): ScanResult {
+  const errorMessage = reason instanceof Error ? reason.message : String(reason)
   return {
     name,
     score: 0,
-    findings: [],
-    info: ['Not checked: the target blocked the scan'],
-    skipped: true,
+    findings: [
+      {
+        severity: 'critical',
+        title: 'Scanner failed',
+        description: `Scanner failed: ${errorMessage}`,
+      },
+    ],
   }
 }
 
@@ -51,49 +66,35 @@ program
 
     const spinner = ora(`Scanning ${url}...`).start()
     const startTime = Date.now()
-    const interferenceProbe = probeInterference(url)
 
-    const scannerConfigs: { name: string; fn: () => Promise<ScanResult> }[] = [
-      { name: 'Headers', fn: () => scanHeaders(url) },
+    const httpScan = runHttpScanners(url).catch(
+      (reason: unknown): HttpScanOutcome => ({
+        results: HTTP_SCANNER_NAMES.map((name) => failedResult(name, reason)),
+        interference: null,
+      }),
+    )
+
+    const directScanners: { name: string; fn: () => Promise<ScanResult> }[] = [
       { name: 'SSL/TLS', fn: () => scanSSL(hostname) },
       { name: 'DNS Security', fn: () => scanDNS(hostname) },
-      { name: 'Cookies', fn: () => scanCookies(url) },
-      { name: 'CORS', fn: () => scanCORS(url) },
-      { name: 'Sensitive Files', fn: () => scanSensitiveFiles(url) },
-      { name: 'Tech Stack', fn: () => scanTechStack(url) },
       { name: 'Breaches', fn: () => scanBreaches(hostname) },
     ]
 
-    const settled = await Promise.allSettled(
-      scannerConfigs.map(async (s) => {
-        if (HTTP_SCANNERS.has(s.name) && (await interferenceProbe)) {
-          return skippedResult(s.name)
-        }
-        return s.fn()
-      })
-    )
-    const interference = await interferenceProbe
+    const directSettled = await Promise.allSettled(directScanners.map((s) => s.fn()))
+    const { results: httpResults, interference } = await httpScan
 
-    const results: ScanResult[] = settled.map((result, i) => {
-      if (result.status === 'fulfilled') {
-        return result.value
-      }
-      const errorMessage =
-        result.reason instanceof Error
-          ? result.reason.message
-          : String(result.reason)
-      return {
-        name: scannerConfigs[i].name,
-        score: 0,
-        findings: [
-          {
-            severity: 'critical' as const,
-            title: 'Scanner failed',
-            description: `Scanner failed: ${errorMessage}`,
-          },
-        ],
-      }
+    const byName = new Map<string, ScanResult>()
+    for (const result of httpResults) {
+      byName.set(result.name, result)
+    }
+    directSettled.forEach((result, i) => {
+      const name = directScanners[i].name
+      byName.set(name, result.status === 'fulfilled' ? result.value : failedResult(name, result.reason))
     })
+
+    const results: ScanResult[] = SCANNER_ORDER.map(
+      (name) => byName.get(name) ?? failedResult(name, 'no result returned'),
+    )
 
     spinner.stop()
 
@@ -132,11 +133,19 @@ program
 
     if (options.json) {
       printJson(report)
+      if (interference) {
+        process.stderr.write(
+          `unpwned: the target blocked this scan (${describeInterference(interference)}). Results are partial.\n`,
+        )
+      }
     } else {
       printReport(report)
     }
 
-    process.exit(overallScore >= 50 ? 0 : 1)
+    if (interference) {
+      process.exit(EXIT_BLOCKED)
+    }
+    process.exit(overallScore >= 50 ? EXIT_PASSED : EXIT_FAILED)
   })
 
 program

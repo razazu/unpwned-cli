@@ -22,7 +22,11 @@ export async function scanCookies(url: string): Promise<ScanResult> {
     }
   }
 
-  const cookies = response.headers.getSetCookie()
+  return evaluateCookies(url, response.headers)
+}
+
+export function evaluateCookies(url: string, headers: Headers): ScanResult {
+  const cookies = headers.getSetCookie()
 
   if (cookies.length === 0) {
     return {

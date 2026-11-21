@@ -68,11 +68,15 @@ export async function scanHeaders(url: string): Promise<ScanResult> {
     }
   }
 
+  return evaluateHeaders(response.headers)
+}
+
+export function evaluateHeaders(headers: Headers): ScanResult {
   const findings: Finding[] = []
   let score = 100
 
   for (const check of HEADER_CHECKS) {
-    const value = response.headers.get(check.header)
+    const value = headers.get(check.header)
     if (!value) {
       score -= check.points
       findings.push({

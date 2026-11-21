@@ -37,6 +37,16 @@ function mockFetchByPath(pathMap: Record<string, MockResponse>) {
   })
 }
 
+function mockFetchByUrl(urlMap: Record<string, MockResponse>) {
+  return vi.fn().mockImplementation((url: string) =>
+    Promise.resolve(makeResponse(urlMap[url] ?? { status: 404 })),
+  )
+}
+
+function requestedUrls(fetchMock: ReturnType<typeof vi.fn>): string[] {
+  return fetchMock.mock.calls.map((call) => String(call[0]))
+}
+
 const ENV_BODY = 'DATABASE_URL=postgres://localhost\nAPI_KEY=abc123\n'
 const GIT_CONFIG_BODY = '[core]\n\trepositoryformatversion = 0\n[remote "origin"]\n\turl = git@github.com:x/y.git\n'
 const WP_CONFIG_BODY = "<?php\ndefine('DB_NAME', 'mydb');\ndefine('DB_USER', 'root');"
@@ -237,6 +247,61 @@ describe('scanSensitiveFiles', () => {
     expect(result.name).toBe('Sensitive Files')
     expect(result.score).toBe(100)
     expect(result.findings).toHaveLength(0)
+  })
+
+  it('checks the site root when the target is a page URL', async () => {
+    const fetchMock = mockFetchByUrl({ 'https://example.com/.env': { status: 200, body: ENV_BODY } })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await scanSensitiveFiles('https://example.com/pricing')
+
+    expect(result.findings.map((finding) => finding.title)).toEqual(['Exposed: /.env'])
+    expect(result.score).toBe(70)
+  })
+
+  it('ignores the query string and fragment of the target', async () => {
+    const fetchMock = mockFetchByUrl({ 'https://example.com/.env': { status: 200, body: ENV_BODY } })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await scanSensitiveFiles('https://example.com/?ref=newsletter#top')
+
+    expect(result.findings.map((finding) => finding.title)).toEqual(['Exposed: /.env'])
+    expect(requestedUrls(fetchMock).every((url) => !url.includes('?') && !url.includes('#'))).toBe(true)
+  })
+
+  it('also checks under the path of the target and names the full location', async () => {
+    const fetchMock = mockFetchByUrl({
+      'https://example.com/.env': { status: 200, body: ENV_BODY },
+      'https://example.com/blog/.git/config': { status: 200, body: GIT_CONFIG_BODY },
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await scanSensitiveFiles('https://example.com/blog/')
+
+    expect(result.findings.map((finding) => finding.title)).toEqual(['Exposed: /.env', 'Exposed: /blog/.git/config'])
+    expect(result.score).toBe(40)
+  })
+
+  it('uses the directory when the target path ends in a file name', async () => {
+    const fetchMock = mockFetchByUrl({ 'https://example.com/app/.env': { status: 200, body: ENV_BODY } })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await scanSensitiveFiles('https://example.com/app/index.html')
+
+    expect(result.findings.map((finding) => finding.title)).toEqual(['Exposed: /app/.env'])
+    expect(requestedUrls(fetchMock).some((url) => url.includes('index.html'))).toBe(false)
+  })
+
+  it('looks for security.txt at the site root only', async () => {
+    const fetchMock = mockFetchByUrl({ 'https://example.com/.well-known/security.txt': { status: 200 } })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const result = await scanSensitiveFiles('https://example.com/blog')
+
+    expect(result.info).toContain('security.txt found at /.well-known/security.txt')
+    expect(requestedUrls(fetchMock).filter((url) => url.endsWith('security.txt'))).toEqual([
+      'https://example.com/.well-known/security.txt',
+    ])
   })
 
   it('floors score at 0 when deductions exceed 100', async () => {

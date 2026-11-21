@@ -8,6 +8,8 @@ import { printReport, printJson } from './output.js'
 import { HTTP_SCANNER_NAMES, runHttpScanners } from './http-scan.js'
 import type { HttpScanOutcome } from './http-scan.js'
 import { describeInterference } from './interference.js'
+import { assertResolvable, parseTarget, TargetError } from './target.js'
+import type { ScanTarget } from './target.js'
 import { sendTelemetry, enableTelemetry, disableTelemetry, isTelemetryEnabled, showFirstRunNotice } from './telemetry.js'
 import { VERSION } from './version.js'
 import type { ScanResult, ScanReport } from './types.js'
@@ -26,6 +28,7 @@ const SCANNER_ORDER = [
 const EXIT_PASSED = 0
 const EXIT_FAILED = 1
 const EXIT_BLOCKED = 2
+const EXIT_UNREACHABLE = 3
 
 function failedResult(name: string, reason: unknown): ScanResult {
   const errorMessage = reason instanceof Error ? reason.message : String(reason)
@@ -57,12 +60,20 @@ program
   .action(async (target: string, options: { json?: boolean; telemetry?: boolean }) => {
     showFirstRunNotice(options.telemetry !== false)
 
-    let url = target.replace(/\/+$/, '')
-    if (!/^https?:\/\//i.test(url)) {
-      url = `https://${url}`
+    let scanTarget: ScanTarget
+    try {
+      scanTarget = parseTarget(target)
+      await assertResolvable(scanTarget.hostname)
+    } catch (error) {
+      if (error instanceof TargetError) {
+        process.stderr.write(`unpwned: ${error.message}
+`)
+        process.exit(EXIT_UNREACHABLE)
+      }
+      throw error
     }
 
-    const hostname = new URL(url).hostname
+    const { url, hostname, tlsPort } = scanTarget
 
     const spinner = ora(`Scanning ${url}...`).start()
     const startTime = Date.now()
@@ -75,7 +86,7 @@ program
     )
 
     const directScanners: { name: string; fn: () => Promise<ScanResult> }[] = [
-      { name: 'SSL/TLS', fn: () => scanSSL(hostname) },
+      { name: 'SSL/TLS', fn: () => scanSSL(hostname, tlsPort) },
       { name: 'DNS Security', fn: () => scanDNS(hostname) },
       { name: 'Breaches', fn: () => scanBreaches(hostname) },
     ]

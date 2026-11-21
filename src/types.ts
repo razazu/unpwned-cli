@@ -12,6 +12,7 @@ export interface ScanResult {
   findings: Finding[]
   info?: string[]
   skipped?: boolean
+  skipReason?: 'blocked' | 'not-applicable'
 }
 
 export interface ScanInterference {

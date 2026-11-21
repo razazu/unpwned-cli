@@ -134,6 +134,10 @@ The **recommended** way is the official [`unpwned-action`](https://github.com/ra
 name: Security Scan
 on: [push, pull_request]
 
+permissions:
+  contents: read
+  pull-requests: write           # needed for comment-on-pr
+
 jobs:
   scan:
     runs-on: ubuntu-latest
